@@ -404,6 +404,16 @@
               <FileType>5</FileType>
               <FilePath>.\User\Inc\FreeRTOSConfig.h</FilePath>
             </File>
+            <File>
+              <FileName>gap_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\Src\gap_profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>gatt_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\Src\gatt_profile.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
