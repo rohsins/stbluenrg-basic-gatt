@@ -30,7 +30,7 @@ SemaphoreHandle_t BLETickSemaphoreHandle;
 
 /* Advertising interval for legacy advertising (0.625 ms units) 
   For iBeacon this should be set to 100 ms. */
-#define LEGACY_ADV_INTERVAL     160  /* 100 ms */
+#define LEGACY_ADV_INTERVAL     1600  /* 100 ms */
 #define EXT_ADV_INTERVAL        160 /* 100 ms */
 
 /* Set to 1 to enable the name AD data in extended advertising events (if
@@ -264,6 +264,9 @@ static void StartBeacon (void)
 
 static void BLETask (void * params)
 {
+	WakeupSourceConfig_TypeDef wakeupIO;
+  PowerSaveLevels stopLevel;
+	
   xSemaphoreTake(BLETickSemaphoreHandle, portMAX_DELAY);
   
   InitDevice();
@@ -282,6 +285,8 @@ static void BLETask (void * params)
     {
       xSemaphoreTake(radioActivitySemaphoreHandle, portMAX_DELAY);
     }
+		
+		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_WITH_TIMER, wakeupIO, &stopLevel);
   }
 }
 
@@ -377,10 +382,24 @@ int main (void) {
   InitModules(); 
 	
 	xTaskCreate(BLETask, "BLEStack", 650, NULL, tskIDLE_PRIORITY + 1, NULL);
-  xTaskCreate(changeADVDataTask, "ADV", 150, NULL, tskIDLE_PRIORITY + 2, NULL );
+//  xTaskCreate(changeADVDataTask, "ADV", 150, NULL, tskIDLE_PRIORITY + 2, NULL );
   
   /* Start the tasks and timer running. */
   vTaskStartScheduler();
 	
 	return 0;
+}
+
+PowerSaveLevels App_PowerSaveLevel_Check(PowerSaveLevels level)
+{
+//  if (LL_USART_IsEnabled(BSP_UART) && (BSP_COM_TxFifoNotEmpty() || BSP_COM_UARTBusy()))
+//  {
+//    return POWER_SAVE_LEVEL_RUNNING;
+//  }
+	if(BLE_STACK_SleepCheck() == POWER_SAVE_LEVEL_RUNNING && HAL_VTIMER_SleepCheck() != TRUE)
+	{
+		return POWER_SAVE_LEVEL_RUNNING;
+	}
+  
+  return POWER_SAVE_LEVEL_STOP_WITH_TIMER;
 }
