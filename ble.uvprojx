@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_FULL_LL_DRIVER CONFIG_DEVICE_BLUENRG_LP CONFIG_HW_SMPS_10uH CONFIG_HW_HSE_TUNE=0 CONFIG_HW_LS_XTAL BLE_STACK_CUSTOM_CONF LEGACY_ADV SAVE_CONTEXT_ON_CSTACK=0 CONFIG_DEVICE_BLUENRG_345</Define>
+              <Define>USE_FULL_LL_DRIVER CONFIG_DEVICE_BLUENRG_LP CONFIG_HW_SMPS_10uH CONFIG_HW_HSE_TUNE=32 CONFIG_HW_LS_XTAL BLE_STACK_BASIC_CONF CONFIG_DEVICE_BLUENRG_345</Define>
               <Undefine></Undefine>
-              <IncludePath>.\User\Inc;.\Peripherals_Drivers\Inc;.\Middlewares\HAL\Inc;.\Middlewares\PKAMGR\Inc;.\Middlewares\RNGMGR\Inc;.\Middlewares\AESMGR\Inc;.\Middlewares\BLECNTR\Inc;.\Middlewares\Bluetooth_LE\inc;.\Middlewares\NVMDB\Inc;.\Middlewares\FreeRTOS\BlueNRG;.\Middlewares\cryptolib\Inc;.\Middlewares\cryptolib\Inc\Common;.\Middlewares\cryptolib\Inc\AES</IncludePath>
+              <IncludePath>.\User\Inc;.\Peripherals_Drivers\Inc;.\Middlewares\HAL\Inc;.\Middlewares\PKAMGR\Inc;.\Middlewares\RNGMGR\Inc;.\Middlewares\AESMGR\Inc;.\Middlewares\BLECNTR\Inc;.\Middlewares\Bluetooth_LE\inc;.\Middlewares\NVMDB\Inc;.\Middlewares\FreeRTOS\BlueNRG;.\Middlewares\cryptolib\Inc;.\Middlewares\cryptolib\Inc\Common;.\Middlewares\cryptolib\Inc\AES;.\Middlewares\BLE_Application\Profiles\Inc;.\Middlewares\BLE_Application\layers_inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -400,19 +400,9 @@
               <FilePath>.\FreeRTOS_handlers.c</FilePath>
             </File>
             <File>
-              <FileName>FreeRTOSConfig.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\User\Inc\FreeRTOSConfig.h</FilePath>
-            </File>
-            <File>
-              <FileName>gap_profile.c</FileName>
+              <FileName>gatt_db.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\User\Src\gap_profile.c</FilePath>
-            </File>
-            <File>
-              <FileName>gatt_profile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\Src\gatt_profile.c</FilePath>
+              <FilePath>.\User\Src\gatt_db.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -582,6 +572,21 @@
               <FileName>stack_cns_api_stubs.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Middlewares\Bluetooth_LE\src\stack_cns_api_stubs.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middleware/BLE/Profile</GroupName>
+          <Files>
+            <File>
+              <FileName>gap_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\BLE_Application\Profiles\Src\gap_profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>gatt_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\BLE_Application\Profiles\Src\gatt_profile.c</FilePath>
             </File>
           </Files>
         </Group>

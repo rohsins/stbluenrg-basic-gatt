@@ -3,7 +3,7 @@
 #include "rf_device_it.h"
 #include "ble_const.h"
 #include "bluenrg_lp_stack.h"
-#include "Beacon_config.h"
+#include "ble_user_config.h"
 #include "rf_driver_hal_power_manager.h"
 #include "rf_driver_hal_vtimer.h"
 #include "bleplat.h"
@@ -15,7 +15,7 @@
 #include "rf_driver_ll_bus.h"
 
 #include "gap_profile.h"
-
+//#include "gatt_db.h"
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
@@ -24,11 +24,11 @@
 #include "semphr.h"
 #include "freertos_ble.h"
 
-#define DEVICE_IDLE_STATE         0
-#define DEVICE_ADV_STATE          1
-#define DEVICE_CONN_STATE         2
-#define DEVICE_SLEEP_STATE        3
-#define DEVICE_DISCONNECTED_STATE 4
+#define BLE_STATE_IDLE         0
+#define BLE_STATE_ADVERTISING  1
+#define BLE_STATE_CONNECTED    2
+#define BLE_STATE_SLEEP        3
+#define BLE_STATE_DISCONNECTED 4
 
 NO_INIT(uint32_t dyn_alloc_a[DYNAMIC_MEMORY_SIZE>>2]);
 
@@ -37,6 +37,8 @@ SemaphoreHandle_t BLETickSemaphoreHandle;
 
 static uint8_t DeviceState;
 static uint16_t ConnectionInterval;
+
+static const uint16_t AdvertisingInterval = 100;
 
 static uint8_t AdvertisementData[] = { 0x02, AD_TYPE_FLAGS, FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE | FLAG_BIT_BR_EDR_NOT_SUPPORTED,
 	6, AD_TYPE_COMPLETE_LOCAL_NAME, 'R', '-', 'B', 'L', 'E' };
@@ -50,7 +52,7 @@ void InitDevice(void)
   uint16_t DeviceNameCharHandle;
   uint16_t AppearanceCharHandle;
   uint8_t BLEAddress[CONFIG_DATA_PUBADDR_LEN] = {0x67,0x77,0x88,0xE1,0x80,0x02};
-	uint8_t DeviceName[] = { 'R', '-', 'B', 'L', 'E' };
+	uint8_t DeviceName[] = { 'H', 'A', 'R', 'D', 'W', 'A', 'R', 'E', '-', 'R', '&', 'D' };
   
   ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET, CONFIG_DATA_PUBADDR_LEN, BLEAddress);
 	
@@ -96,11 +98,8 @@ void InitDevice(void)
   {
 //    Success
   }
-}
-
-void ConfigureDeviceAdvertising (uint16_t AdvertisingInterval)
-{
-	uint8_t ret;
+	
+//	ret = Add_RC_Service();
 	
 	ret = aci_gap_set_advertising_configuration(0, GAP_MODE_GENERAL_DISCOVERABLE, ADV_PROP_CONNECTABLE | ADV_PROP_SCANNABLE | ADV_PROP_LEGACY,
 		(AdvertisingInterval * 1000) / 625, (AdvertisingInterval * 1000) / 625,
@@ -117,7 +116,7 @@ void ConfigureDeviceAdvertising (uint16_t AdvertisingInterval)
 	ret = aci_gap_set_advertising_data(0, ADV_COMPLETE_DATA,  sizeof AdvertisementData, AdvertisementData);
 }
 
-void SetDeviceConnectable (void)
+void StartAdvertising (void)
 {
 	uint8_t ret;
 	
@@ -133,7 +132,7 @@ void SetDeviceConnectable (void)
 	else
 	{
 		// Success
-		DeviceState = DEVICE_ADV_STATE;
+		DeviceState = BLE_STATE_ADVERTISING;
 	}
 }
 
@@ -175,35 +174,6 @@ void ModulesTick(void)
   BLE_STACK_Tick();
   NVMDB_Tick();
 }
-
-//static void BLETask (void * params)
-//{
-//	WakeupSourceConfig_TypeDef wakeupIO;
-//	PowerSaveLevels stopLevel;
-//	
-////  xSemaphoreTake(BLETickSemaphoreHandle, portMAX_DELAY);
-//  
-//  InitDevice();
-//  
-////  StartBeacon();
-//  
-////  xSemaphoreGive(BLETickSemaphoreHandle);
-//  
-//  while(1)
-//  {
-////    xSemaphoreTake(BLETickSemaphoreHandle, portMAX_DELAY);
-//    ModulesTick();    
-////    xSemaphoreGive(BLETickSemaphoreHandle);
-//		
-////    if(BLE_STACK_SleepCheck() != POWER_SAVE_LEVEL_RUNNING && HAL_VTIMER_SleepCheck() == TRUE)
-////    {
-////      xSemaphoreTake(radioActivitySemaphoreHandle, portMAX_DELAY);
-////    }
-//		
-//		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_WITH_TIMER, wakeupIO, &stopLevel);
-//  }
-//}
-
 
 void initIO (void)
 {
@@ -249,13 +219,6 @@ int main (void) {
 		vTaskDelay(1000);
 	};
 	
-//	radioActivitySemaphoreHandle = xSemaphoreCreateBinary();
-//	BLETickSemaphoreHandle = xSemaphoreCreateMutex();
-	
-//	if (radioActivitySemaphoreHandle==NULL || BLETickSemaphoreHandle == NULL){
-//    while (1);
-//  }
-	
 //	initIO();
   InitModules();
 	InitDevice();
@@ -265,41 +228,32 @@ int main (void) {
 	WakeupIO.RTC_enable = 0;
 	WakeupIO.LPU_enable = 0;
 	
-	DeviceState = DEVICE_IDLE_STATE;
-	ConfigureDeviceAdvertising(1000);
-	SetDeviceConnectable();
-	DeviceState = DEVICE_ADV_STATE;
+	DeviceState = BLE_STATE_IDLE;
+	
+	StartAdvertising();
+	DeviceState = BLE_STATE_ADVERTISING;
 	
 	while (1)
 	{
 		ModulesTick();
 		
-//		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_WITH_TIMER, WakeupIO, &StopLevel);
+//		switch(DeviceState) {
+//			case BLE_STATE_DISCONNECTED:
+//				DeviceState = BLE_STATE_IDLE;
+//				break;
+//			case BLE_STATE_CONNECTED:
+//				DeviceState = BLE_STATE_SLEEP;
+//				break;
+//			case BLE_STATE_IDLE:
+//				break;
+//			default:
+//				HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
+//    }
+		
+		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
 	}
-	
-//	HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_WITH_TIMER, wakeupIO, &stopLevel);
-	
-//	xTaskCreate(BLETask, "BLEStack", 650, NULL, tskIDLE_PRIORITY + 1, NULL);
-  
-//  vTaskStartScheduler();
-	
+
 	return 0;
-}
-
-FILE __stdout;
-FILE __stdin;
-
-int fputc(int c, FILE *f)
-{  
-//  BSP_COM_Write((uint8_t *)&c, 1);
-  
-  return 1;
-}
-
-int fgetc (FILE *f) {
-  int data = 0;
-//  while (Read_Buffer_Pop((uint8_t *)&data) != SUCCESS);
-  return data;
 }
 
 PowerSaveLevels App_PowerSaveLevel_Check(PowerSaveLevels level)
@@ -309,7 +263,7 @@ PowerSaveLevels App_PowerSaveLevel_Check(PowerSaveLevels level)
 		return POWER_SAVE_LEVEL_RUNNING;
 	}
   
-  return POWER_SAVE_LEVEL_STOP_WITH_TIMER;
+  return POWER_SAVE_LEVEL_STOP_NOTIMER;
 }
 
 void hci_le_connection_complete_event (uint8_t Status,
@@ -320,7 +274,7 @@ void hci_le_connection_complete_event (uint8_t Status,
 {
 	if (Status == BLE_STATUS_SUCCESS)	
 	{
-		DeviceState = DEVICE_CONN_STATE;
+		DeviceState = BLE_STATE_CONNECTED;
 		ConnectionInterval = ConnectionIntervalParam;
 	}
 }
@@ -342,5 +296,48 @@ void hci_disconnection_complete_event (uint8_t Status,
 	uint16_t ConnectionHandle,
 	uint8_t Reason)
 {
-	DeviceState = DEVICE_DISCONNECTED_STATE;
+	DeviceState = BLE_STATE_DISCONNECTED;
+	
+	StartAdvertising();
+	DeviceState = BLE_STATE_ADVERTISING;
+}
+
+void hci_hardware_error_event(uint8_t Hardware_Code)
+{
+  if (Hardware_Code <= 0x03)
+  {
+    NVIC_SystemReset();
+  }
+}
+
+void aci_hal_fw_error_event(uint8_t FW_Error_Type,
+                            uint8_t Data_Length,
+                            uint8_t Data[])
+{
+  if (FW_Error_Type <= 0x03)
+  {
+    uint16_t connHandle;
+    
+    connHandle = LE_TO_HOST_16(Data);
+    
+    aci_gap_terminate(connHandle, BLE_ERROR_TERMINATED_REMOTE_USER); 
+  }
+}
+
+void aci_gatt_srv_attribute_modified_event(uint16_t Connection_Handle,
+                                       uint16_t Attr_Handle,
+                                       uint16_t Attr_Data_Length,
+                                       uint8_t Attr_Data[])
+{
+  
+}
+
+void aci_l2cap_connection_update_resp_event(uint16_t Connection_Handle,
+                                            uint16_t Result)
+{
+  if(Result) {
+//    PRINTF("> Connection parameters rejected.\n");
+  } else  {
+//    PRINTF("> Connection parameters accepted.\n");
+  }
 }

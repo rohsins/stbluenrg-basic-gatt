@@ -25,7 +25,7 @@
 /**
  * Default device name.
  */
-static const uint8_t default_dev_name[] = { 'B', 'l', 'u', 'e', 'N', 'R', 'G' };
+static const uint8_t default_dev_name[] = { 'H', 'A', 'R', 'D', 'W', 'A', 'R', 'E', '-', 'R', '&', 'D' };
 
 /**
  *@defgroup Device Name Characteristic value.
@@ -52,7 +52,7 @@ static ble_gatt_val_buffer_def_t gap_device_name_val_buff = {
 /**
  * Characteristic value buffer.
  */
-static uint8_t gap_appearance_buff[GAP_CHR_APPEARANCE_VAL_LEN];
+static uint8_t gap_appearance_buff[GAP_CHR_APPEARANCE_VAL_LEN] = { 0x80, 0x00 };
 
 static const ble_gatt_val_buffer_def_t gap_appearance_val_buff = {
     .buffer_len = GAP_CHR_APPEARANCE_VAL_LEN,
@@ -73,6 +73,7 @@ static uint8_t gap_peripheral_preferred_con_params_buff[GAP_CHR_PERIPH_PREF_CONN
     0xFFU, 0xFFU, 0xFFU, 0xFFU,
     0x00U, 0x00U, 0xFFU, 0xFFU
 };
+
 static const ble_gatt_val_buffer_def_t gap_peripheral_preferred_con_params_val_buff = {
     .buffer_len = GAP_CHR_PERIPH_PREF_CONN_PARAMS_LEN,
     .buffer_p = gap_peripheral_preferred_con_params_buff,
