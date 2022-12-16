@@ -13,9 +13,10 @@
 #include "aes_manager.h"
 #include "ble_controller.h"
 #include "rf_driver_ll_bus.h"
+#include "rf_driver_ll_gpio.h"
 
 #include "gap_profile.h"
-//#include "gatt_db.h"
+#include "gatt_db.h"
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
@@ -99,7 +100,7 @@ void InitDevice(void)
 //    Success
   }
 	
-//	ret = Add_RC_Service();
+	ret = Add_RC_Service();
 	
 	ret = aci_gap_set_advertising_configuration(0, GAP_MODE_GENERAL_DISCOVERABLE, ADV_PROP_CONNECTABLE | ADV_PROP_SCANNABLE | ADV_PROP_LEGACY,
 		(AdvertisingInterval * 1000) / 625, (AdvertisingInterval * 1000) / 625,
@@ -210,16 +211,66 @@ void initIO (void)
   LL_PWR_EnablePDB(LL_PWR_PUPD_IO15);
 }
 
+void ConfigGPIO (void)
+{
+	LL_GPIO_InitTypeDef GpioInitTypeDef = { 0 };
+	
+	LL_AHB_EnableClock(LL_AHB_PERIPH_GPIOB);
+	
+	LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_10, LL_GPIO_MODE_OUTPUT);
+	LL_GPIO_SetPinOutputType(GPIOB, LL_GPIO_PIN_10, LL_GPIO_OUTPUT_PUSHPULL);
+	LL_GPIO_SetPinSpeed(GPIOB, LL_GPIO_PIN_10, LL_GPIO_SPEED_FREQ_LOW);
+	LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_10, LL_GPIO_PULL_NO);
+	
+	LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_11, LL_GPIO_MODE_OUTPUT);
+	LL_GPIO_SetPinOutputType(GPIOB, LL_GPIO_PIN_11, LL_GPIO_OUTPUT_PUSHPULL);
+	LL_GPIO_SetPinSpeed(GPIOB, LL_GPIO_PIN_11, LL_GPIO_SPEED_FREQ_LOW);
+	LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_11, LL_GPIO_PULL_NO);
+	
+//	LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_10);
+	LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_10);
+	LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_11);
+	
+//	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_10);
+
+//  /* Configure GPIO for LED */
+//  GpioInitTypeDef.Pin = LL_GPIO_PIN_10;
+//  GpioInitTypeDef.Mode = LL_GPIO_MODE_OUTPUT;
+//  GpioInitTypeDef.Speed = LL_GPIO_SPEED_FREQ_LOW;
+//  GpioInitTypeDef.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+//  GpioInitTypeDef.Pull = LL_GPIO_PULL_NO;
+//  LL_GPIO_Init(GPIOB, &GpioInitTypeDef);
+}
+
+void RunnerTask (void * params)
+{
+	while (1)
+	{
+		vTaskDelay(1000);
+		LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_10);
+	}
+}
+
+void TickTask (void * params)
+{
+	while (1)
+	{
+		ModulesTick();
+	}
+}
+
 int main (void) {
 	
 	WakeupSourceConfig_TypeDef WakeupIO;
 	PowerSaveLevels StopLevel;
 	
-	while (SystemInit(SYSCLK_16M, BLE_SYSCLK_16M) != 0) {
+//	while (SystemInit(SYSCLK_16M, BLE_SYSCLK_16M) != 0) {
+	while (SystemInit(SYSCLK_64M, BLE_SYSCLK_32M) != 0) {
 		vTaskDelay(1000);
 	};
 	
 //	initIO();
+	ConfigGPIO();
   InitModules();
 	InitDevice();
 	
@@ -233,25 +284,30 @@ int main (void) {
 	StartAdvertising();
 	DeviceState = BLE_STATE_ADVERTISING;
 	
+	xTaskCreate(TickTask, "Tick task", 256, NULL, 1, NULL);
+//	xTaskCreate(RunnerTask, "Runner Task", 256, NULL, 1, NULL);
+	
+	vTaskStartScheduler();
+	
 	while (1)
-	{
-		ModulesTick();
-		
-//		switch(DeviceState) {
-//			case BLE_STATE_DISCONNECTED:
-//				DeviceState = BLE_STATE_IDLE;
-//				break;
-//			case BLE_STATE_CONNECTED:
-//				DeviceState = BLE_STATE_SLEEP;
-//				break;
-//			case BLE_STATE_IDLE:
-//				break;
-//			default:
-//				HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
-//    }
-		
-		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
-	}
+//	{
+//		ModulesTick();
+//		
+////		switch(DeviceState) {
+////			case BLE_STATE_DISCONNECTED:
+////				DeviceState = BLE_STATE_IDLE;
+////				break;
+////			case BLE_STATE_CONNECTED:
+////				DeviceState = BLE_STATE_SLEEP;
+////				break;
+////			case BLE_STATE_IDLE:
+////				break;
+////			default:
+////				HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
+////    }
+//		
+////		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
+//	}
 
 	return 0;
 }
@@ -324,20 +380,19 @@ void aci_hal_fw_error_event(uint8_t FW_Error_Type,
   }
 }
 
-void aci_gatt_srv_attribute_modified_event(uint16_t Connection_Handle,
-                                       uint16_t Attr_Handle,
-                                       uint16_t Attr_Data_Length,
-                                       uint8_t Attr_Data[])
-{
-  
-}
+//void aci_gatt_srv_attribute_modified_event(uint16_t Connection_Handle,
+//                                       uint16_t Attr_Handle,
+//                                       uint16_t Attr_Data_Length,
+//                                       uint8_t Attr_Data[])
+//{
+//}
 
-void aci_l2cap_connection_update_resp_event(uint16_t Connection_Handle,
-                                            uint16_t Result)
-{
-  if(Result) {
-//    PRINTF("> Connection parameters rejected.\n");
-  } else  {
-//    PRINTF("> Connection parameters accepted.\n");
-  }
-}
+//void aci_l2cap_connection_update_resp_event(uint16_t Connection_Handle,
+//                                            uint16_t Result)
+//{
+//  if(Result) {
+////    PRINTF("> Connection parameters rejected.\n");
+//  } else  {
+////    PRINTF("> Connection parameters accepted.\n");
+//  }
+//}
