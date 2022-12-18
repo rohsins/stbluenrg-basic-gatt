@@ -46,6 +46,8 @@ static uint8_t AdvertisementData[] = { 0x02, AD_TYPE_FLAGS, FLAG_BIT_LE_GENERAL_
 
 static Advertising_Set_Parameters_t AdvertisingSetParamters[1];
 	
+uint8_t isBusy = 0;
+	
 void InitDevice(void)
 {
   uint8_t ret;
@@ -100,7 +102,7 @@ void InitDevice(void)
 //    Success
   }
 	
-	ret = Add_RC_Service();
+//	ret = Add_RC_Service();
 	
 	ret = aci_gap_set_advertising_configuration(0, GAP_MODE_GENERAL_DISCOVERABLE, ADV_PROP_CONNECTABLE | ADV_PROP_SCANNABLE | ADV_PROP_LEGACY,
 		(AdvertisingInterval * 1000) / 625, (AdvertisingInterval * 1000) / 625,
@@ -284,30 +286,33 @@ int main (void) {
 	StartAdvertising();
 	DeviceState = BLE_STATE_ADVERTISING;
 	
-	xTaskCreate(TickTask, "Tick task", 256, NULL, 1, NULL);
+//	xTaskCreate(TickTask, "Tick task", 256, NULL, 1, NULL);
 //	xTaskCreate(RunnerTask, "Runner Task", 256, NULL, 1, NULL);
 	
-	vTaskStartScheduler();
+//	vTaskStartScheduler();
 	
 	while (1)
-//	{
-//		ModulesTick();
-//		
-////		switch(DeviceState) {
-////			case BLE_STATE_DISCONNECTED:
-////				DeviceState = BLE_STATE_IDLE;
-////				break;
-////			case BLE_STATE_CONNECTED:
-////				DeviceState = BLE_STATE_SLEEP;
-////				break;
-////			case BLE_STATE_IDLE:
-////				break;
-////			default:
-////				HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
-////    }
-//		
-////		HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
-//	}
+	{
+		ModulesTick();
+		
+//		switch(DeviceState) {
+//			case BLE_STATE_DISCONNECTED:
+//				DeviceState = BLE_STATE_IDLE;
+//				break;
+//			case BLE_STATE_CONNECTED:
+//				DeviceState = BLE_STATE_SLEEP;
+//				break;
+//			case BLE_STATE_IDLE:
+//				break;
+//			default:
+//				HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
+//    }
+		
+		if (!isBusy)
+		{
+			HAL_PWR_MNGR_Request(POWER_SAVE_LEVEL_STOP_NOTIMER, WakeupIO, &StopLevel);
+		}
+	}
 
 	return 0;
 }

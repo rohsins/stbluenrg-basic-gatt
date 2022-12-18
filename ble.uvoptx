@@ -165,6 +165,31 @@
           <WinNumber>1</WinNumber>
           <ItemText>stopLevel</ItemText>
         </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ret</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>SystemCoreClock,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Data</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Attribute_Handle</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>controlPointHandle</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
@@ -268,8 +293,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\FreeRTOS_handlers.c</PathWithFileName>
-      <FilenameWithoutPath>FreeRTOS_handlers.c</FilenameWithoutPath>
+      <PathWithFileName>.\User\Src\gatt_db.c</PathWithFileName>
+      <FilenameWithoutPath>gatt_db.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -280,8 +305,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\User\Src\gatt_db.c</PathWithFileName>
-      <FilenameWithoutPath>gatt_db.c</FilenameWithoutPath>
+      <PathWithFileName>.\User\Src\FreeRTOS_handlers.c</PathWithFileName>
+      <FilenameWithoutPath>FreeRTOS_handlers.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -741,7 +766,7 @@
       <GroupNumber>11</GroupNumber>
       <FileNumber>36</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Peripherals_Drivers\Src\rf_driver_ll_gpio.c</PathWithFileName>
@@ -917,7 +942,7 @@
 
   <Group>
     <GroupName>::Device</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>1</RteFlg>
@@ -925,7 +950,7 @@
 
   <Group>
     <GroupName>::RTOS</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>1</RteFlg>
